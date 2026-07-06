@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Aplikasi monitoring stok ingot untuk operator produksi dan gudang. Pantau pergerakan masuk, terpakai, dan terbuang secara real-time." />
+  <title>Ingot Monitor — Sistem Monitoring Stok Ingot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 20h20M4 20V10l8-7 8 7v10M9 20v-5h6v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Ingot Monitor</span>
+          <span class="brand-sub">v1.0</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menu Utama</span>
+      <ul>
+        <li>
+          <a href="#" class="nav-link active" id="nav-dashboard" onclick="showPage('dashboard', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="nav-input" onclick="showPage('input', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span>Input Data</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="nav-history" onclick="showPage('history', this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3.05 11a9 9 0 1 0 .49-3.03" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 4v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Riwayat</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="footer-time" id="sidebar-time"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrapper">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="badge-date" id="topbar-date"></div>
+      </div>
+    </header>
+
+    <!-- PAGES -->
+    <main class="content">
+
+      <!-- ==================== DASHBOARD PAGE ==================== -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1 class="page-title">Dashboard Stok Ingot</h1>
+          <p class="page-subtitle">Ringkasan kondisi stok terkini</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Stok Akhir</span>
+              <span class="stat-value" id="dash-stock">—</span>
+            </div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 4.5V12a9 9 0 01-9 9 9 9 0 01-9-9V7.5L12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Masuk (All Time)</span>
+              <span class="stat-value" id="dash-masuk">—</span>
+            </div>
+          </div>
+          <div class="stat-card stat-amber">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3H5a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><path d="M19 3h-4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><path d="M9 13H5a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/><path d="M19 13h-4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4a2 2 0 00-2-2z" stroke="currentColor" stroke-width="1.8"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Pakai Produksi</span>
+              <span class="stat-value" id="dash-pakai">—</span>
+            </div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Buang / Scrap</span>
+              <span class="stat-value" id="dash-buang">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Latest Record -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2 class="section-card-title">Data Terbaru</h2>
+            <span class="badge" id="dash-latest-shift">—</span>
+          </div>
+          <div class="latest-grid" id="dash-latest-grid">
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M9 17H7A5 5 0 017 7h1M15 7h1a5 5 0 010 10h-1M8 12h8" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <p>Belum ada data.</p>
+              <button class="btn btn-primary btn-sm" onclick="showPage('input', document.getElementById('nav-input'))">Input Data Pertama</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Activity -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2 class="section-card-title">Aktivitas Hari Ini</h2>
+            <span class="text-muted" id="dash-today-date"></span>
+          </div>
+          <div id="dash-today-content">
+            <div class="empty-state">
+              <p>Tidak ada input hari ini.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== INPUT PAGE ==================== -->
+      <section class="page" id="page-input">
+        <div class="page-header">
+          <h1 class="page-title">Input Data Ingot</h1>
+          <p class="page-subtitle">Catat pergerakan stok ingot untuk shift ini</p>
+        </div>
+
+        <div class="form-card">
+          <form id="ingot-form" novalidate>
+            <!-- Operator Info -->
+            <div class="form-section">
+              <h3 class="form-section-title">Informasi Operator</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="f-operator" class="form-label">Nama Operator <span class="required">*</span></label>
+                  <input type="text" id="f-operator" class="form-control" placeholder="Masukkan nama operator" required autocomplete="off" />
+                  <span class="form-hint">Tersimpan otomatis dari sesi terakhir</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Shift <span class="required">*</span></label>
+                  <div class="radio-group" id="f-shift-group">
+                    <label class="radio-card" id="shift-red-label">
+                      <input type="radio" name="shift" value="Red" id="shift-red" required />
+                      <span class="radio-dot red-dot"></span>
+                      <span>Red</span>
+                    </label>
+                    <label class="radio-card" id="shift-white-label">
+                      <input type="radio" name="shift" value="White" id="shift-white" />
+                      <span class="radio-dot white-dot"></span>
+                      <span>White</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Info -->
+            <div class="form-section">
+              <h3 class="form-section-title">Waktu</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="f-date" class="form-label">Tanggal <span class="required">*</span></label>
+                  <input type="date" id="f-date" class="form-control" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Waktu <span class="required">*</span></label>
+                  <div class="radio-group">
+                    <label class="radio-card">
+                      <input type="radio" name="time" value="Day" id="time-day" required />
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                      <span>Day</span>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="time" value="Night" id="time-night" />
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>Night</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stock Data -->
+            <div class="form-section">
+              <h3 class="form-section-title">Data Stok</h3>
+              <div class="form-row form-row-3">
+                <div class="form-group">
+                  <label for="f-masuk" class="form-label">Total Ingot Masuk</label>
+                  <div class="input-with-unit">
+                    <input type="number" id="f-masuk" class="form-control" placeholder="0" min="0" oninput="autoCalc()" />
+                    <span class="unit">pcs</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="f-pakai" class="form-label">Pakai Produksi</label>
+                  <div class="input-with-unit">
+                    <input type="number" id="f-pakai" class="form-control" placeholder="0" min="0" oninput="autoCalc()" />
+                    <span class="unit">pcs</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="f-buang" class="form-label">Buang / Reject</label>
+                  <div class="input-with-unit">
+                    <input type="number" id="f-buang" class="form-control" placeholder="0" min="0" oninput="autoCalc()" />
+                    <span class="unit">pcs</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stock Akhir -->
+              <div class="stock-result-box" id="stock-result-box">
+                <div class="stock-result-label">Stok Akhir (Otomatis)</div>
+                <div class="stock-result-value" id="stock-akhir-display">0</div>
+                <div class="stock-result-formula">= Masuk − Pakai − Buang</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="resetForm()">Reset Form</button>
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Simpan Data
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ==================== HISTORY PAGE ==================== -->
+      <section class="page" id="page-history">
+        <div class="page-header">
+          <h1 class="page-title">Riwayat Data</h1>
+          <p class="page-subtitle">Seluruh catatan pergerakan stok ingot</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="table-controls">
+          <div class="table-controls-left">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input type="text" id="search-input" placeholder="Cari operator, shift..." oninput="filterHistory()" />
+            </div>
+            <select class="form-control select-sm" id="sort-select" onchange="filterHistory()">
+              <option value="newest">Terbaru Dulu</option>
+              <option value="oldest">Terlama Dulu</option>
+            </select>
+          </div>
+          <div class="table-controls-right">
+            <span class="text-muted" id="history-count">0 entri</span>
+            <button class="btn btn-danger btn-sm" onclick="confirmClearAll()" id="clear-all-btn" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Hapus Semua
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="exportCSV()" id="export-btn" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrapper">
+          <table class="data-table" id="history-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th>Shift</th>
+                <th>Operator</th>
+                <th class="text-right">Masuk</th>
+                <th class="text-right">Pakai</th>
+                <th class="text-right">Buang</th>
+                <th class="text-right">Stok Akhir</th>
+                <th class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+          <div class="empty-state" id="history-empty" style="display:none">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M9 17H7A5 5 0 017 7h1M15 7h1a5 5 0 010 10h-1M8 12h8" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <p>Tidak ada data yang ditemukan.</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination">
+          <span class="text-muted" id="pagination-info"></span>
+          <div class="pagination-controls" id="pagination-controls"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <h3 class="modal-title" id="modal-title">Konfirmasi</h3>
+      <p class="modal-message" id="modal-message">Apakah Anda yakin?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+        <button class="btn btn-danger" id="modal-confirm-btn">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
