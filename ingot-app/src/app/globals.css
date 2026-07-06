@@ -51,21 +51,21 @@
 :root {
   --background: #000000;
   --foreground: #FFFFFF;
-  --card: #202020;
+  --card: #2B1414;
   --card-foreground: #FFFFFF;
-  --popover: #202020;
+  --popover: #2B1414;
   --popover-foreground: #FFFFFF;
   --primary: #FFC000;
   --primary-foreground: #000000;
-  --secondary: #181818;
+  --secondary: #1F0D0D;
   --secondary-foreground: #FFFFFF;
-  --muted: #181818;
-  --muted-foreground: #7D7D7D;
-  --accent: #202020;
+  --muted: #1F0D0D;
+  --muted-foreground: #A88888;
+  --accent: #2B1414;
   --accent-foreground: #FFFFFF;
   --destructive: #FF5C5C;
-  --border: #202020;
-  --input: #202020;
+  --border: #3D1A1A;
+  --input: #2B1414;
   --ring: #FFC000;
   --chart-1: #FFC000;
   --chart-2: #29ABE2;
@@ -77,30 +77,30 @@
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #FFC000;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #202020;
+  --sidebar-accent: #2B1414;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #202020;
+  --sidebar-border: #3D1A1A;
   --sidebar-ring: #FFC000;
 }
 
 .dark {
   --background: #000000;
   --foreground: #FFFFFF;
-  --card: #202020;
+  --card: #2B1414;
   --card-foreground: #FFFFFF;
-  --popover: #202020;
+  --popover: #2B1414;
   --popover-foreground: #FFFFFF;
   --primary: #FFC000;
   --primary-foreground: #000000;
-  --secondary: #181818;
+  --secondary: #1F0D0D;
   --secondary-foreground: #FFFFFF;
-  --muted: #181818;
-  --muted-foreground: #7D7D7D;
-  --accent: #202020;
+  --muted: #1F0D0D;
+  --muted-foreground: #A88888;
+  --accent: #2B1414;
   --accent-foreground: #FFFFFF;
   --destructive: #FF5C5C;
-  --border: #202020;
-  --input: #202020;
+  --border: #3D1A1A;
+  --input: #2B1414;
   --ring: #FFC000;
   --chart-1: #FFC000;
   --chart-2: #29ABE2;
@@ -111,9 +111,9 @@
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: #FFC000;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #202020;
+  --sidebar-accent: #2B1414;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #202020;
+  --sidebar-border: #3D1A1A;
   --sidebar-ring: #FFC000;
 }
 
