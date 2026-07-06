@@ -4,14 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getAllEntries, saveEntry, savePrefs, getPrefs, todayISO } from "@/lib/store";
 import { IngotEntry } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
+import { StokTable } from "@/components/input/StokTable";
+import { ReceiptDialog, ReceiptData } from "@/components/input/ReceiptDialog";
 import { toast } from "sonner";
-import { Save, RotateCcw, Sun, Moon, Calculator } from "lucide-react";
+import { Save, RotateCcw, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FormState {
@@ -36,7 +37,8 @@ const INITIAL_FORM: FormState = {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+    <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+      <span className="h-3 w-0.5 rounded-full bg-primary" />
       {children}
     </p>
   );
@@ -47,8 +49,10 @@ export default function InputPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [stokAwal, setStokAwal] = useState(0);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
-  // Load saved prefs on mount
+  // Load saved prefs + carry-over stok awal on mount
   useEffect(() => {
     const prefs = getPrefs();
     setForm((prev) => ({
@@ -56,14 +60,18 @@ export default function InputPage() {
       operator: prefs.operator ?? "",
       shift: prefs.shift ?? "",
     }));
+
+    const sorted = [...getAllEntries()].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    setStokAwal(sorted.length > 0 ? sorted[0].akhir : 0);
   }, []);
 
   const akhir =
+    stokAwal +
     (parseFloat(form.masuk) || 0) -
     (parseFloat(form.pakai) || 0) -
     (parseFloat(form.buang) || 0);
-
-  const isNegative = akhir < 0;
 
   const set = useCallback((key: keyof FormState, val: string) => {
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -99,17 +107,10 @@ export default function InputPage() {
 
     setSubmitting(true);
 
-    // Compute last stock to carry over
-    const allEntries = getAllEntries();
-    const sorted = [...allEntries].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    const prevAkhir = sorted.length > 0 ? sorted[0].akhir : 0;
-
     const masuk = parseFloat(form.masuk) || 0;
     const pakai = parseFloat(form.pakai) || 0;
     const buang = parseFloat(form.buang) || 0;
-    const newAkhir = masuk - pakai - buang;
+    const newAkhir = stokAwal + masuk - pakai - buang;
 
     const entry: IngotEntry = {
       id: Date.now(),
@@ -130,9 +131,20 @@ export default function InputPage() {
       shift: entry.shift,
     });
 
-    toast.success("Data berhasil disimpan!", {
-      description: `Stok Akhir: ${newAkhir.toLocaleString("id-ID")} pcs`,
+    setReceipt({
+      operator: entry.operator,
+      shift: entry.shift,
+      time: entry.time,
+      date: entry.date,
+      stokAwal,
+      masuk,
+      pakai,
+      buang,
+      akhir: newAkhir,
+      savedAt: entry.timestamp,
     });
+
+    setStokAwal(newAkhir);
 
     // Reset numeric fields but keep prefs
     setForm({
@@ -154,9 +166,9 @@ export default function InputPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        <Card className="border shadow-sm overflow-hidden">
-          {/* ---- Section: Operator Info ---- */}
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        {/* ---- Section: Operator Info ---- */}
+        <Card className="ring-1 ring-white/15 shadow-sm">
           <CardContent className="p-6 space-y-4">
             <SectionTitle>Informasi Operator</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -220,10 +232,10 @@ export default function InputPage() {
               </div>
             </div>
           </CardContent>
+        </Card>
 
-          <Separator />
-
-          {/* ---- Section: Waktu ---- */}
+        {/* ---- Section: Waktu ---- */}
+        <Card className="ring-1 ring-white/15 shadow-sm">
           <CardContent className="p-6 space-y-4">
             <SectionTitle>Waktu</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -280,94 +292,42 @@ export default function InputPage() {
               </div>
             </div>
           </CardContent>
+        </Card>
 
-          <Separator />
-
-          {/* ---- Section: Data Stok ---- */}
+        {/* ---- Section: Data Stok ---- */}
+        <Card className="ring-1 ring-white/15 shadow-sm overflow-hidden">
           <CardContent className="p-6 space-y-4">
             <SectionTitle>Data Stok</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {[
-                { id: "masuk", label: "Total Ingot Masuk", key: "masuk" },
-                { id: "pakai", label: "Pakai Produksi", key: "pakai" },
-                { id: "buang", label: "Buang / Reject", key: "buang" },
-              ].map(({ id, label, key }) => (
-                <div key={id} className="space-y-2">
-                  <Label htmlFor={id} className="font-semibold text-sm">
-                    {label}
-                  </Label>
-                  <div className="relative flex items-center">
-                    <Input
-                      id={id}
-                      type="number"
-                      min={0}
-                      placeholder="0"
-                      value={form[key as keyof FormState]}
-                      onChange={(e) => set(key as keyof FormState, e.target.value)}
-                      className="pr-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span className="absolute right-3 text-xs font-semibold text-muted-foreground pointer-events-none">
-                      pcs
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Auto-calc result */}
-            <div
-              className={cn(
-                "mt-2 rounded-xl border-2 p-5 flex items-center gap-4 flex-wrap transition-colors",
-                isNegative
-                  ? "border-destructive/40 bg-destructive/5"
-                  : "border-primary/30 bg-primary/5"
-              )}
-            >
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0",
-                isNegative ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
-              )}>
-                <Calculator className="h-5 w-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={cn("text-[10px] font-bold uppercase tracking-widest",
-                  isNegative ? "text-destructive/70" : "text-primary/70"
-                )}>
-                  Stok Akhir (Otomatis)
-                </p>
-                <p className={cn("text-[11px] mt-0.5",
-                  isNegative ? "text-destructive/60" : "text-primary/60"
-                )}>
-                  = Masuk − Pakai − Buang
-                </p>
-              </div>
-              <p className={cn("text-3xl font-extrabold tabular-nums tracking-tight",
-                isNegative ? "text-destructive" : "text-primary"
-              )}>
-                {akhir.toLocaleString("id-ID")}
-              </p>
-            </div>
+            <StokTable
+              stokAwal={stokAwal}
+              masuk={form.masuk}
+              pakai={form.pakai}
+              buang={form.buang}
+              onChange={(key, value) => set(key, value)}
+              akhir={akhir}
+            />
           </CardContent>
-
-          <Separator />
-
-          {/* ---- Actions ---- */}
-          <div className="flex items-center justify-end gap-3 bg-muted/30 px-6 py-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
-              disabled={submitting}
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reset
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              <Save className="h-4 w-4 mr-2" />
-              {submitting ? "Menyimpan..." : "Simpan Data"}
-            </Button>
-          </div>
         </Card>
+
+        {/* ---- Actions ---- */}
+        <div className="flex items-center justify-end gap-3 rounded-xl ring-1 ring-white/15 bg-muted/30 px-6 py-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={submitting}
+          >
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            <Save className="h-4 w-4 mr-2" />
+            {submitting ? "Menyimpan..." : "Simpan Data"}
+          </Button>
+        </div>
       </form>
+
+      <ReceiptDialog receipt={receipt} onClose={() => setReceipt(null)} />
     </div>
   );
 }
