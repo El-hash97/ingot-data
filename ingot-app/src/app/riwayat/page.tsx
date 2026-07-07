@@ -4,8 +4,9 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { getAllEntries, deleteEntry, clearAllEntries, formatNumber, formatDate } from "@/lib/store";
 import { IngotEntry } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ShiftBadge, TimeBadge } from "@/components/riwayat/badges";
+import { RiwayatCard } from "@/components/riwayat/RiwayatCard";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -49,41 +50,6 @@ interface ConfirmState {
   title: string;
   description: string;
   action: (() => void) | null;
-}
-
-function ShiftBadge({ shift }: { shift: string }) {
-  return (
-    <Badge
-      variant="outline"
-      className={
-        shift === "Red"
-          ? "border-destructive/40 bg-destructive/10 text-destructive font-semibold text-[11px]"
-          : "border-border bg-muted text-foreground font-semibold text-[11px]"
-      }
-    >
-      <span
-        className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
-          shift === "Red" ? "bg-destructive" : "bg-foreground/60"
-        }`}
-      />
-      {shift}
-    </Badge>
-  );
-}
-
-function TimeBadge({ time }: { time: string }) {
-  return (
-    <Badge
-      variant="outline"
-      className={
-        time === "Day"
-          ? "border-primary/40 bg-primary/10 text-primary text-[11px]"
-          : "border-(--chart-2)/40 bg-(--chart-2)/10 text-(--chart-2) text-[11px]"
-      }
-    >
-      {time === "Day" ? "☀ Day" : "🌙 Night"}
-    </Badge>
-  );
 }
 
 function pageRange(current: number, total: number): (number | "…")[] {
@@ -268,40 +234,43 @@ export default function RiwayatPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <Card className="border shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                {["No", "Tanggal", "Waktu", "Shift", "Operator", "Masuk", "Pakai", "Buang", "Stok Akhir", "Aksi"].map(
-                  (h) => (
-                    <TableHead
-                      key={h}
-                      className={`text-[11px] uppercase tracking-wide font-bold whitespace-nowrap ${
-                        ["Masuk", "Pakai", "Buang", "Stok Akhir"].includes(h) ? "text-right" : ""
-                      } ${h === "Aksi" ? "text-center" : ""}`}
-                    >
-                      {h}
-                    </TableHead>
-                  )
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center py-16 text-muted-foreground">
-                    <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">
-                      {entries.length === 0
-                        ? "Belum ada data tersimpan."
-                        : "Tidak ada data yang cocok dengan pencarian."}
-                    </p>
-                  </TableCell>
+      {/* Empty state (shared across table & card layouts) */}
+      {pageData.length === 0 && (
+        <Card className="border shadow-sm">
+          <CardContent className="text-center py-16 text-muted-foreground">
+            <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">
+              {entries.length === 0
+                ? "Belum ada data tersimpan."
+                : "Tidak ada data yang cocok dengan pencarian."}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Table (desktop, md and up) */}
+      {pageData.length > 0 && (
+        <Card className="hidden md:block border shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  {["No", "Tanggal", "Waktu", "Shift", "Operator", "Masuk", "Pakai", "Buang", "Stok Akhir", "Aksi"].map(
+                    (h) => (
+                      <TableHead
+                        key={h}
+                        className={`text-[11px] uppercase tracking-wide font-bold whitespace-nowrap ${
+                          ["Masuk", "Pakai", "Buang", "Stok Akhir"].includes(h) ? "text-right" : ""
+                        } ${h === "Aksi" ? "text-center" : ""}`}
+                      >
+                        {h}
+                      </TableHead>
+                    )
+                  )}
                 </TableRow>
-              ) : (
-                pageData.map((e, i) => (
+              </TableHeader>
+              <TableBody>
+                {pageData.map((e, i) => (
                   <TableRow key={e.id} className="hover:bg-muted/30">
                     <TableCell className="text-muted-foreground text-sm">
                       {startItem + i}
@@ -344,12 +313,21 @@ export default function RiwayatPage() {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
+
+      {/* Cards (mobile, below md) */}
+      {pageData.length > 0 && (
+        <div className="space-y-3 md:hidden">
+          {pageData.map((e) => (
+            <RiwayatCard key={e.id} entry={e} onDelete={handleDelete} />
+          ))}
         </div>
-      </Card>
+      )}
 
       {/* Pagination */}
       {filtered.length > 0 && (
